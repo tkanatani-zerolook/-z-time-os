@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Z-TIME OS｜Zero Look 伴走支援版</title>
+<style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#171717;--muted:#6b6b6b;--line:#deded8;--accent:#1f6f5f;--warn:#9a5a14;--bad:#a22d2d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
+header{padding:22px 18px 14px;position:sticky;top:0;background:#f4f4f1;color:#33332f;z-index:3;border-bottom:1px solid #d8d8d2;box-shadow:0 1px 8px rgba(0,0,0,.05)}
+header h1{font-size:26px;margin:0;color:#35352f;letter-spacing:.045em;font-weight:800}header p{margin:5px 0 0;color:#74746d;font-size:13px}
+nav{display:flex;gap:8px;overflow:auto;padding:12px 18px;border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:76px;z-index:2}
+nav button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;font-weight:700;cursor:pointer}nav button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+main{max-width:1080px;margin:0 auto;padding:18px}.tab{display:none}.tab.active{display:block}.grid{display:grid;gap:14px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}.card h2{font-size:18px;margin:0 0 12px}.card h3{font-size:15px;margin:0 0 10px}.muted{color:var(--muted);font-size:13px}.kpi{font-size:28px;font-weight:800;margin-top:4px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.field{display:flex;flex-direction:column;gap:6px;margin:9px 0}.field label{font-size:12px;color:var(--muted);font-weight:700}.field input,.field select,.field textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit}.field textarea{min-height:92px;resize:vertical}.btn{border:none;background:var(--ink);color:#fff;padding:11px 15px;border-radius:10px;font-weight:800;cursor:pointer}.btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.danger{background:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}th{color:var(--muted);font-size:12px}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#efefea;font-size:12px}.good{color:var(--accent);font-weight:800}.warn{color:var(--warn);font-weight:800}.bad{color:var(--bad);font-weight:800}.bar{height:10px;background:#ecece8;border-radius:99px;overflow:hidden}.bar>span{display:block;height:100%;background:var(--ink)}.callout{border-left:4px solid var(--accent);padding:10px 12px;background:#f2f7f5;border-radius:8px;font-size:13px}.small{font-size:12px}.right{text-align:right}.section-gap{margin-top:16px}.free-summary{margin-top:22px;border:2px solid var(--ink)}.free-formula{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;align-items:stretch}.free-box{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fafaf8}.free-box strong{display:block;font-size:20px;margin-top:4px}.free-op{display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px}.free-result{background:#f2f7f5;border-color:#b9d8cf}.free-meter{margin-top:14px;height:16px;background:#ecece8;border-radius:999px;overflow:hidden}.free-meter span{display:block;height:100%;background:var(--accent)}
+
+.week-toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}.week-title{font-weight:800}.calendar-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:#fff}.week-cal{display:grid;grid-template-columns:64px repeat(7,minmax(110px,1fr));min-width:860px;position:relative}.cal-head{padding:9px 6px;border-bottom:1px solid var(--line);border-left:1px solid var(--line);text-align:center;font-size:12px;font-weight:800;background:#fafaf8;position:sticky;top:0;z-index:1}.cal-head:first-child{border-left:none}.time-col{position:relative;background:#fafaf8}.time-label{height:48px;border-top:1px solid var(--line);padding:2px 6px;font-size:11px;color:var(--muted);text-align:right}.day-col{position:relative;border-left:1px solid var(--line);background:repeating-linear-gradient(to bottom,#fff 0,#fff 47px,#ecece8 47px,#ecece8 48px)}.day-canvas{position:relative;height:720px}.event{position:absolute;left:4px;right:4px;border-radius:8px;padding:5px 6px;font-size:11px;line-height:1.25;overflow:hidden;border:1px solid rgba(0,0,0,.08);cursor:pointer}.event strong{display:block;font-size:11px}.event.direct{background:#e7f3ef}.event.indirect{background:#eef0f4}.event.necessary{background:#f6f0e6}.event.waste{background:#f7e8e8}.event.overtime{box-shadow:inset 4px 0 0 var(--bad)}.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:12px}.legend span{display:inline-flex;align-items:center;gap:5px}.dot{width:10px;height:10px;border-radius:3px;display:inline-block}.legacy-list{margin-top:12px}.event-detail{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fafaf8}.event-detail[hidden]{display:none}
+.dare-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;gap:8px;align-items:stretch;margin-top:12px}
+.dare-flow>div{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fafaf8;min-width:0}
+.dare-flow b{display:block;font-size:13px}.dare-flow span{display:block;color:var(--muted);font-size:11px;margin-top:5px;line-height:1.5}.dare-flow i{align-self:center;font-style:normal;font-weight:900;color:var(--muted)}
+.weight-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);gap:16px;align-items:start}
+.weight-bars{display:grid;gap:10px}.weight-row{display:grid;grid-template-columns:minmax(150px,1fr) 2fr 58px;gap:9px;align-items:center}.weight-name{font-size:12px;font-weight:700}.weight-track{height:18px;border-radius:999px;background:#ecece8;overflow:hidden}.weight-fill{height:100%;background:var(--accent);border-radius:999px}.weight-pct{text-align:right;font-weight:800;font-size:12px}
+.function-row{display:grid;grid-template-columns:1fr 1fr 110px 46px;gap:8px;align-items:end;margin-bottom:10px}.function-row .field{margin:0}.function-row button{height:42px}.function-preview{grid-column:1/-1;font-size:12px;color:var(--muted);padding:0 2px 4px}.function-preview b{color:var(--text)}@media(max-width:700px){.function-row{grid-template-columns:1fr 1fr}.function-row .unit-field{grid-column:1}.function-row .remove-fn{grid-column:2}.function-preview{grid-column:1/-1}}
+.dare-note{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fafaf8}.dare-note h3{margin:0 0 8px}.dare-note p{margin:6px 0;font-size:12px;line-height:1.55}
+@media(max-width:760px){.dare-flow{grid-template-columns:1fr}.dare-flow i{transform:rotate(90deg);justify-self:center}.weight-layout{grid-template-columns:1fr}.weight-row{grid-template-columns:minmax(110px,1fr) 1.5fr 52px}}
+@media(max-width:760px){.g2,.g3{grid-template-columns:1fr}nav{top:96px}.kpi{font-size:24px}.free-formula{grid-template-columns:1fr}.free-op{min-height:20px}}
+
+.buffer-panel{border:2px solid var(--ink);background:#fbfbf8}
+.buffer-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.buffer-kpi{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.buffer-kpi strong{display:block;font-size:22px;margin-top:4px}
+.buffer-kpi.recommended{background:#f2f7f5;border-color:#b9d8cf}
+.buffer-note{margin-top:12px;padding:10px 12px;border-radius:10px;background:#f6f6f2;font-size:12px}
+@media(max-width:760px){.buffer-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.thief-ranking{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}
+.rank-card{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}
+.rank-card h3{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.rank-row{display:grid;grid-template-columns:34px minmax(0,1fr) 74px 58px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.rank-row:last-child{border-bottom:none}
+.rank-no{width:28px;height:28px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:#efefea;font-weight:800;font-size:12px}
+.rank-name{font-size:13px;font-weight:700}
+.rank-bar{height:7px;background:#ecece8;border-radius:999px;overflow:hidden;margin-top:5px}
+.rank-bar span{display:block;height:100%;background:var(--ink)}
+.rank-value{text-align:right;font-weight:800;font-size:13px}
+.rank-meta{text-align:right;color:var(--muted);font-size:11px}
+@media(max-width:760px){.thief-ranking{grid-template-columns:1fr}.rank-row{grid-template-columns:34px minmax(0,1fr) 64px 48px}}
+
+.diagnosis-panel{border:2px solid var(--ink);background:#fff}
+.diagnosis-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.diagnosis-kpi{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fafaf8}
+.diagnosis-kpi strong{display:block;font-size:22px;margin-top:4px}
+.diagnosis-result{margin-top:14px;padding:14px;border-radius:12px;background:#f6f6f2;border:1px solid var(--line)}
+.diagnosis-badge{display:inline-block;padding:5px 9px;border-radius:999px;background:var(--ink);color:#fff;font-size:12px;font-weight:800}
+.diagnosis-detail{margin-top:10px;display:grid;gap:7px;font-size:13px}
+.diagnosis-detail b{font-weight:800}
+@media(max-width:760px){.diagnosis-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.zt-brand{max-width:1180px;margin:0 auto}
+.zt-title-row{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.zt-by{font-size:12px;color:#85857d;letter-spacing:.04em;font-weight:600}
+@media(max-width:640px){
+ header{padding:16px 14px 12px}
+ header h1{font-size:22px}
+ .zt-title-row{gap:8px}
+ .zt-by{font-size:11px}
+}
+
+
+html,body,button,input,select,textarea,table{
+  font-family:"Hiragino Kaku Gothic ProN","Hiragino Kaku Gothic Pro",
+              "ヒラギノ角ゴ ProN W3","ヒラギノ角ゴ Pro W3",
+              -apple-system,BlinkMacSystemFont,sans-serif !important;
+}
+
+
+.fixed-cost-box{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fafaf8}.fixed-cost-row{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:8px;align-items:end;margin-top:8px}.fixed-cost-row .field{margin:0}.fixed-total-note{margin-top:8px;font-size:12px;color:var(--muted)}@media(max-width:640px){.fixed-cost-row{grid-template-columns:1fr 90px}.fixed-cost-row .fixed-remove{grid-column:1/-1;justify-self:start}}
+</style>
+</head>
+<body>
+<header>
+  <div class="zt-brand">
+    <div class="zt-title-row">
+      <h1>Z-TIME OS</h1>
+      <span class="zt-by">by Zero Look</span>
+    </div>
+    <p>時間を記録するのではなく、成果へ配分し、経験を教訓へ変える。</p>
+  </div>
+</header>
+<nav>
+<button data-tab="setup" class="active">① 基本設定</button>
+<button data-tab="plan">② 月次設計</button>
+<button data-tab="receipt">③ 時間レシート</button>
+<button data-tab="actual">④ 営業実績</button>
+<button data-tab="review">⑤ 内省・教訓化</button>
+</nav>
+<main>
+<section id="setup" class="tab active">
+  <div class="card section-gap">
+    <h2>Zero Lookとのデータ共有</h2>
+    <p class="muted">入力データはこのブラウザ内に保存されます。Zero Lookへ共有するときだけ、Z-TIME OSの設定・時間レシート・実績・内省を1つの共有ファイルに書き出します。</p>
+    <div class="grid g2">
+      <div>
+        <h3>利用者：Zero Lookへ共有</h3>
+        <p class="muted">共有ファイルを保存し、メールやチャット等に添付して Zero Lookへ送ってください。</p>
+        <button type="button" id="exportCoachData">Zero Lookへ共有</button>
+      </div>
+      <div>
+        <h3>Zero Look：共有データを読み込む</h3>
+        <p class="muted">受け取った共有ファイルを読み込むと、このブラウザに対象者の状態を再現します。</p>
+        <input type="file" id="importCoachFile" accept=".json,application/json" style="display:none">
+        <button type="button" id="importCoachData">共有データを読み込む</button>
+      </div>
+    </div>
+    <div class="note section-gap" id="shareStatus">共有は利用者本人の操作で行います。Zero Lookへ自動送信されることはありません。</div>
+    <p class="muted" style="margin-top:8px">担当：金谷孝之</p>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <h2>自分の役割を定義する</h2>
+      <div class="field"><label>役割名</label><input id="roleName" value="営業" /></div>
+      <div class="field"><label>役割の目的（何のため）</label><textarea id="rolePurpose">顧客の課題を把握し、解決策を提示し、成果につながる取引をつくる</textarea></div>
+      <div class="field"><label>成果</label><textarea id="roleOutcome">必要な活動量を確保し、ニーズを収集し、提案の質を高め、受注・継続につなげる</textarea></div>
+      <div class="field"><label>付加価値</label><textarea id="roleValue">考える時間を「生産性」として確保することで、内省と教訓化が習慣化され、自ら考える仮説思考と、次の打ち手や行動を選択する主体性が得られる</textarea></div>
+    </div>
+    <div class="card">
+      <h2>月の時間枠を決める</h2>
+      <div class="field"><label>定時の総労働時間（h）</label><input type="number" id="totalHours" value="160" min="0" step="0.5" /></div>
+      <div class="field"><label>拘束固定費 合計（h）</label><input type="number" id="fixedHours" value="24" min="0" step="0.5" readonly /></div>
+      <div class="fixed-cost-box">
+        <div class="row" style="justify-content:space-between">
+          <div><b>拘束固定費の内訳</b><div class="muted">毎月ほぼ必ず発生し、先に差し引く時間を項目別に登録します。</div></div>
+          <button class="btn secondary" type="button" id="addFixedItem">＋ 固定費を追加</button>
+        </div>
+        <div id="fixedItems"></div>
+        <div class="fixed-total-note">例：朝礼、定例会議、必須報告、必須事務など。合計は上の「拘束固定費 合計」へ自動反映されます。</div>
+      </div>
+      <div class="field"><label>戦略固定費：仮説・準備（h）</label><input type="number" id="hypHours" value="8" min="0" step="0.5" /></div>
+      <div class="field"><label>戦略固定費：内省・教訓化（h）</label><input type="number" id="reflectHours" value="8" min="0" step="0.5" /></div>
+      <div class="field"><label>バッファ（h）</label><input type="number" id="bufferHours" value="16" min="0" step="0.5" /></div>
+      <div class="muted">下の実績分析から推奨値を自動算出できます。</div>
+    </div>
+  </div>
+
+  <div class="card section-gap buffer-panel">
+    <h2>バッファ実績分析</h2>
+    <p class="muted">直近28日間の時間レシートから、外的な「時間泥棒」の比率を計測し、定時の総労働時間へ投影して翌月の推奨バッファを算出します。内的な時間泥棒は改善対象として分けます。</p>
+    <div class="buffer-kpis">
+      <div class="buffer-kpi"><span class="muted">分析対象の記録時間</span><strong id="bufRecorded">0h</strong></div>
+      <div class="buffer-kpi"><span class="muted">外的時間泥棒</span><strong id="bufExternal">0h</strong><span class="small muted" id="bufExternalPct">0%</span></div>
+      <div class="buffer-kpi"><span class="muted">内的時間泥棒</span><strong id="bufInternal">0h</strong><span class="small muted">改善対象</span></div>
+      <div class="buffer-kpi recommended"><span class="muted">推奨バッファ</span><strong id="bufRecommended">0h</strong><span class="small muted">0.5h単位で切上げ</span></div>
+    </div>
+    <div class="buffer-note" id="bufFormula">時間レシートが蓄積されると自動計算します。</div>
+
+    <div class="thief-ranking">
+      <div class="rank-card">
+        <h3><span>外的時間泥棒ランキング</span><span class="pill">バッファ対象</span></h3>
+        <p class="muted">自分では完全にコントロールしにくい予定外時間。翌月バッファの根拠にします。</p>
+        <div id="externalRanking"></div>
+      </div>
+      <div class="rank-card">
+        <h3><span>内的時間泥棒ランキング</span><span class="pill">改善対象</span></h3>
+        <p class="muted">段取り・手戻りなど、減らせる可能性がある時間。バッファには含めません。</p>
+        <div id="internalRanking"></div>
+      </div>
+    </div>
+
+    <div class="row section-gap">
+      <button class="btn" type="button" id="applyBuffer">推奨値をバッファへ反映</button>
+      <span class="muted" id="bufDataNote"></span>
+    </div>
+  </div>
+
+  <div class="card section-gap diagnosis-panel">
+    <h2>時間不足診断</h2>
+    <p class="muted">「改善すれば足りるのか」「外的変動への備えが不足しているのか」「そもそも物理的に足りないのか」を分けて見ます。</p>
+    <div class="diagnosis-grid">
+      <div class="diagnosis-kpi"><span class="muted">実質使用可能時間</span><strong id="diagAvailable">0h</strong></div>
+      <div class="diagnosis-kpi"><span class="muted">役割遂行の必要時間</span><strong id="diagRequired">0h</strong></div>
+      <div class="diagnosis-kpi"><span class="muted">改善余地</span><strong id="diagImprove">0h</strong></div>
+      <div class="diagnosis-kpi"><span class="muted">構造的不足</span><strong id="diagShortage">0h</strong></div>
+    </div>
+    <div class="diagnosis-result">
+      <span class="diagnosis-badge" id="diagType">判定待ち</span>
+      <div class="diagnosis-detail" id="diagMessage">時間レシートと月次設計から自動判定します。</div>
+    </div>
+  </div>
+
+  <div class="card section-gap">
+    <h2>機能（定義）を設計する</h2>
+    <p class="muted">テンプレートをそのまま使う必要はありません。役割・今月の戦略に合わせて、機能を追加・修正・削除できます。</p>
+    <div class="callout"><b>機能定義の基本：</b>「何を」＋「どうする」の形で入力します。単なる作業名ではなく、その仕事が果たす機能を言葉にします。</div>
+    <div id="functionEditor" class="section-gap"></div>
+    <div class="row section-gap">
+      <button class="btn secondary" id="addFunction" type="button">＋ 機能を追加</button>
+      <button class="btn secondary" id="resetFunctions" type="button">営業テンプレートに戻す</button>
+      <span class="muted">変更するとDARE比較も自動で作り直します。</span>
+    </div>
+  </div>
+  <div class="card section-gap">
+    <h2>営業プロセスの標準値</h2>
+    <p class="muted">「目標件数 × 1件あたり標準時間」で必要時間を自動算出します。</p>
+    <table><thead><tr><th>機能</th><th>月間目標</th><th>標準時間/件</th><th>必要時間</th></tr></thead><tbody id="processBody"></tbody></table>
+  </div>
+  <div class="row section-gap"><button class="btn" id="saveSetup">設定を保存</button><span id="saveMsg" class="muted"></span></div>
+</section>
+
+<section id="plan" class="tab">
+  <div class="grid g3">
+    <div class="card"><div class="muted">定時の総労働時間</div><div class="kpi" id="kTotal">0h</div></div>
+    <div class="card"><div class="muted">固定・戦略固定・バッファ</div><div class="kpi" id="kReserved">0h</div></div>
+    <div class="card"><div class="muted">自由に使える時間</div><div class="kpi" id="kFree">0h</div></div>
+  </div>
+  <div class="card section-gap">
+    <h2>必要活動時間を算出する</h2>
+    <table><thead><tr><th>機能</th><th>目標</th><th>標準時間</th><th>必要時間</th><th>構成比</th></tr></thead><tbody id="planBody"></tbody></table>
+  </div>
+  <div class="card section-gap">
+    <h2>DARE：今月の役割ウエイトを決める</h2>
+    <p class="muted">基本設計は共通でも、重要度は人・月・営業戦略によって変わります。役割を相対比較し、今月のウエイトを算出します。</p>
+    <div class="dare-flow">
+      <div><b>① 役割を定義する</b><span>営業成果をつくる機能を固定する</span></div>
+      <i>→</i>
+      <div><b>② 相対比較する</b><span>どちらが何倍重要かを判断する</span></div>
+      <i>→</i>
+      <div><b>③ ウエイト化する</b><span>比較値を100%へ正規化する</span></div>
+      <i>→</i>
+      <div><b>④ 時間へ変換する</b><span>裁量時間をウエイトで配分する</span></div>
+    </div>
+    <div class="callout section-gap"><b>DAREの基本設計：</b>役割そのものに一律の順位を付けません。今月の目標・顧客・案件状況に応じて、あなた自身のウエイトを決めます。</div>
+    <div id="compareBox" class="section-gap"></div>
+    <div class="row section-gap"><button class="btn" id="calcWeights">今月のウエイトを計算</button><span class="muted">比較値は保存され、翌月に見直せます。</span></div>
+    <div id="weightResult" class="section-gap"></div>
+  </div>
+  <div class="card section-gap">
+    <h2>月次時間予算</h2>
+    <p class="muted">必要活動時間を先に確保し、残った裁量時間を重要度比率で配分します。</p>
+    <div id="budgetResult"></div>
+  </div>
+</section>
+
+<section id="receipt" class="tab">
+  <div class="card">
+    <h2>時間レシート</h2>
+    <p class="muted">予定ではなく、実際に使った時間を週表示で可視化します。開始・終了時刻から使用時間を自動計算します。</p>
+    <div class="grid g3">
+      <div class="field"><label>日付</label><input type="date" id="rcDate" /></div>
+      <div class="field"><label>開始</label><input type="time" id="rcStart" value="09:00" /></div>
+      <div class="field"><label>終了</label><input type="time" id="rcEnd" value="10:00" /></div>
+    </div>
+    <div class="grid g3">
+      <div class="field"><label>何に使ったか</label><input id="rcActivity" placeholder="例：A社訪問、提案書作成、会議" /></div>
+      <div class="field"><label>機能（営業実績へ反映）</label><select id="rcFunction"><option value="">実績に反映しない</option></select></div>
+      <div class="field"><label>件数</label><input type="number" id="rcCount" value="1" min="0" step="1" /></div>
+    </div>
+    <div class="grid g3">
+      <div class="field"><label>時間区分</label><select id="rcCost"><option value="free">自由時間</option><option value="fixed">拘束固定費</option><option value="strategy">戦略固定費</option><option value="buffer">バッファ使用</option></select></div>
+      <div class="field"><label>役割</label><select id="rcRole"><option value="in">役割内</option><option value="out">役割外</option></select></div>
+      <div class="field"><label>生産性区分</label><select id="rcProd"><option value="direct">直接生産</option><option value="indirect">間接生産</option><option value="necessary">必要非生産</option><option value="waste">不要非生産</option></select></div>
+    </div>
+    <div class="grid g3">
+      <div class="field"><label>予定外・時間泥棒</label>
+        <select id="rcThief">
+          <option value="planned">予定内</option>
+          <option value="external">外的時間泥棒（バッファ対象）</option>
+          <option value="internal">内的時間泥棒（改善対象）</option>
+        </select>
+      </div>
+      <div class="field"><label>時間泥棒の要因</label>
+        <select id="rcThiefReason">
+          <option value="">選択なし</option>
+          <option value="interrupt">急な依頼・差し込み</option>
+          <option value="trouble">突発トラブル</option>
+          <option value="waiting">待ち・相手都合</option>
+          <option value="delay">移動・交通遅延</option>
+          <option value="rework">手戻り</option>
+          <option value="search">探し物・情報探索</option>
+          <option value="poorplan">段取り不足</option>
+          <option value="other">その他</option>
+        </select>
+      </div>
+      <div class="field"><label>残業</label><select id="rcOvertime"><option value="no">定時内</option><option value="yes">残業</option></select></div>
+    </div>
+    <div class="field"><label>メモ</label><input id="rcMemo" placeholder="気づき・理由など" /></div>
+    <div class="row"><button class="btn" id="addReceipt">レシートを追加</button><span id="rcDuration" class="muted">1.00h</span></div>
+  </div>
+  <div class="grid g2 section-gap">
+    <div class="card"><div class="muted">記録時間</div><div class="kpi" id="rcTotal">0h</div></div>
+    <div class="card"><div class="muted">役割外時間</div><div class="kpi" id="rcOut">0h</div></div>
+    <div class="card"><div class="muted">不要非生産</div><div class="kpi" id="rcWaste">0h</div></div>
+    <div class="card"><div class="muted">外的時間泥棒</div><div class="kpi" id="rcExternal">0h</div></div>
+  </div>
+  <div class="card section-gap">
+    <div class="week-toolbar">
+      <div class="row"><button class="btn secondary" id="prevWeek">← 前週</button><button class="btn secondary" id="thisWeek">今週</button><button class="btn secondary" id="nextWeek">次週 →</button></div>
+      <div class="week-title" id="weekTitle"></div>
+    </div>
+    <div class="calendar-wrap"><div class="week-cal" id="weekCalendar"></div></div>
+    <div class="legend">
+      <span><i class="dot" style="background:#e7f3ef"></i>直接生産</span><span><i class="dot" style="background:#eef0f4"></i>間接生産</span><span><i class="dot" style="background:#f6f0e6"></i>必要非生産</span><span><i class="dot" style="background:#f7e8e8"></i>不要非生産</span><span><b class="bad">左線</b> 残業</span>
+    </div>
+    <div id="eventDetail" class="event-detail" hidden></div>
+    <div id="legacyReceipts" class="legacy-list"></div>
+  </div>
+</section>
+
+<section id="actual" class="tab">
+  <div class="card">
+    <h2>営業実績（時間レシートから自動集計）</h2>
+    <p class="muted">通常は時間レシートを入力するだけで、機能別の時間・件数がここへ自動反映されます。下の手入力は、レシートに残せない例外実績の補正用です。</p>
+    <div id="receiptActualSummary" class="section-gap"></div>
+    <details class="section-gap"><summary><b>例外実績を手動補正する</b></summary>
+    <div class="grid g3" style="margin-top:12px">
+      <div class="field"><label>日付</label><input type="date" id="actDate" /></div>
+      <div class="field"><label>機能</label><select id="actType"></select></div>
+      <div class="field"><label>時間（h）</label><input type="number" id="actHours" value="1" min="0" step="0.25" /></div>
+    </div>
+    <div class="grid g2">
+      <div class="field"><label>件数</label><input type="number" id="actCount" value="1" min="0" step="1" /></div>
+      <div class="field"><label>メモ</label><input id="actMemo" placeholder="例：A社 ニーズ確認" /></div>
+    </div>
+    <button class="btn" id="addActual">補正実績を追加</button>
+    </details>
+  </div>
+  <div class="card section-gap">
+    <h2>当月の残業実績</h2>
+    <p class="muted">残業は予算に含めず、発生した実績だけを記録します。何に使ったかまで残し、生産性判定につなげます。</p>
+    <div class="grid g3">
+      <div class="field"><label>残業時間（h）</label><input type="number" id="otHours" value="1" min="0" step="0.25" /></div>
+      <div class="field"><label>用途</label><select id="otType"></select></div>
+      <div class="field"><label>生産性区分</label><select id="otProd"><option value="direct">直接生産</option><option value="indirect">間接生産</option><option value="necessary">必要非生産</option><option value="waste">不要非生産</option></select></div>
+    </div>
+    <div class="field"><label>メモ</label><input id="otMemo" placeholder="例：提案書作成、顧客対応、会議延長など" /></div>
+    <button class="btn" id="addOvertime">残業実績を追加</button>
+    <div class="section-gap">
+      <table><thead><tr><th>用途</th><th>生産性</th><th>時間</th><th>メモ</th><th></th></tr></thead><tbody id="overtimeBody"></tbody></table>
+    </div>
+  </div>
+
+  <div class="card section-gap">
+    <h2>例外の手動補正履歴</h2>
+    <table><thead><tr><th>日付</th><th>機能</th><th>件数</th><th>時間</th><th>メモ</th><th></th></tr></thead><tbody id="actualBody"></tbody></table>
+  </div>
+</section>
+
+<section id="review" class="tab">
+  <div class="card">
+    <div class="row" style="justify-content:space-between;align-items:end">
+      <div class="field" style="margin:0;max-width:220px"><label>振り返り対象月</label><input id="reviewMonth" type="month"></div>
+      <div class="muted small">時間レシート＋例外補正を対象月ごとに自動集計します。過去月は保存時の計画値で比較します。</div>
+    </div>
+    <h2 class="section-gap">予実ギャップ</h2>
+    <div id="gapResult"></div>
+  </div>
+  <div class="card section-gap">
+    <h2>残業の生産性</h2>
+    <div id="overtimeSummary"></div>
+  </div>
+  <div class="card section-gap">
+    <h2>内省 → 教訓化 → 仮説</h2>
+    <div class="callout">達成・未達のどちらも「経験」で終わらせず、次に再現できる形へ変換する。</div>
+    <div class="field"><label>1. 何が起きたか？（事象）</label><textarea id="revEvent"></textarea></div>
+    <div class="field"><label>2. なぜ起きたか？（内省）</label><textarea id="revWhy"></textarea></div>
+    <div class="field"><label>3. 何を学んだか？（教訓化）</label><textarea id="revLesson"></textarea></div>
+    <div class="field"><label>4. 次に何を試すか？（仮説）</label><textarea id="revHyp"></textarea></div>
+    <button class="btn" id="saveReview">振り返りを保存</button>
+  </div>
+  <div class="card section-gap">
+    <h2>翌月へ引き継ぐ仮説</h2>
+    <div id="carryHyp" class="muted">まだ保存されていません。</div>
+  </div>
+  <div class="card section-gap">
+    <h2>月別の学習履歴</h2>
+    <p class="muted">保存した「事象 → 内省 → 教訓化 → 次の仮説」を月ごとに残します。過去月を選ぶと、その月の計画値と実績を再表示できます。</p>
+    <div id="reviewHistory"></div>
+  </div>
+</section>
+
+<div class="card free-summary">
+  <h2>自由に使える時間</h2>
+  <p class="muted">定時の総労働時間から、拘束固定費・戦略固定費・バッファを差し引いた「自分で配分できる時間」です。</p>
+  <div class="free-formula">
+    <div class="free-box"><span class="muted">定時の総労働時間</span><strong id="bottomTotal">0h</strong></div>
+    <div class="free-op">−</div>
+    <div class="free-box"><span class="muted">固定・戦略固定・バッファ</span><strong id="bottomReserved">0h</strong></div>
+    <div class="free-op">＝</div>
+    <div class="free-box free-result"><span class="muted">自由に使える時間</span><strong id="bottomFree">0h</strong></div>
+  </div>
+  <div class="free-meter" aria-label="自由に使える時間の比率"><span id="bottomFreeBar" style="width:0%"></span></div>
+  <div class="row" style="justify-content:space-between;margin-top:8px"><span class="small muted">定時の総労働時間に占める自由時間</span><span class="small" id="bottomFreePct">0%</span></div>
+</div>
+</main>
+<script>
+const defaultDefs=[
+ {id:'visit',object:'活動量',verb:'確保する',unit:'訪問',target:20,mins:60},
+ {id:'needs',object:'ニーズ',verb:'収集する',unit:'件',target:10,mins:30},
+ {id:'proposal',object:'提案',verb:'作成する',unit:'件',target:5,mins:90},
+ {id:'roleplay',object:'ロープレ',verb:'実施する',unit:'回',target:5,mins:30},
+ {id:'practice',object:'実践',verb:'行う',unit:'件',target:5,mins:60}
+];
+let defs=defaultDefs.map(d=>({...d,name:d.object+'を'+d.verb}));
+let fixedItems=[{id:'fx_default',name:'会議・朝礼・必須事務など',hours:24}];
+const $=id=>document.getElementById(id);
+function num(id){return Number($(id).value)||0}
+function save(){
+ syncDefsFromEditor();
+ syncFixedItemsFromEditor();
+ const state={roleName:$('roleName').value,rolePurpose:$('rolePurpose').value,roleOutcome:$('roleOutcome').value,roleValue:$('roleValue').value,totalHours:num('totalHours'),fixedHours:fixedTotal(),fixedItems:fixedItems.map(x=>({...x})),hypHours:num('hypHours'),reflectHours:num('reflectHours'),bufferHours:num('bufferHours'),defs:defs.map(d=>({...d,target:Number($('t_'+d.id).value)||0,mins:Number($('m_'+d.id).value)||0})),comparisons:getComparisons()};
+ localStorage.setItem('stm_state',JSON.stringify(state));$('saveMsg').textContent='保存しました';setTimeout(()=>$('saveMsg').textContent='',1500);renderAll();
+}
+function load(){
+ const st=JSON.parse(localStorage.getItem('stm_state')||'null');if(!st)return;
+ ['roleName','rolePurpose','roleOutcome','roleValue','totalHours','hypHours','reflectHours','bufferHours'].forEach(k=>{if(st[k]!==undefined)$(k).value=st[k]});
+ if(Array.isArray(st.fixedItems)&&st.fixedItems.length){
+   fixedItems=st.fixedItems.map((x,i)=>({id:x.id||('fx_'+Date.now()+'_'+i),name:String(x.name||''),hours:Number(x.hours)||0}));
+ }else if(st.fixedHours!==undefined){
+   fixedItems=[{id:'fx_legacy',name:'既存の拘束固定費',hours:Number(st.fixedHours)||0}];
+ }
+ if(st.defs&&st.defs.length){
+   defs=st.defs.map((x,i)=>{
+     let object=x.object,verb=x.verb;
+     if(!object||!verb){
+       const m=String(x.name||'').match(/^(.+?)を(.+)$/);
+       object=object||(m?m[1]:String(x.name||'機能'+(i+1)));
+       verb=verb||(m?m[2]:'実行する');
+     }
+     return {...x,id:x.id||('fn_'+Date.now()+'_'+i),object,verb,name:object+'を'+verb,unit:x.unit||'件',target:Number(x.target)||0,mins:Number(x.mins)||0};
+   });
+ }
+}
+function fixedTotal(){return fixedItems.reduce((sum,x)=>sum+(Number(x.hours)||0),0)}
+function syncFixedItemsFromEditor(){
+ fixedItems=fixedItems.map(x=>{
+   const n=$('fx_name_'+x.id),h=$('fx_hours_'+x.id);
+   return {...x,name:n?n.value.trim():x.name,hours:h?(Number(h.value)||0):(Number(x.hours)||0)};
+ });
+}
+function updateFixedTotal(){
+ syncFixedItemsFromEditor();
+ $('fixedHours').value=fixedTotal().toFixed(1);
+ renderDiagnosis();renderPlan();renderBottomFree();
+}
+function renderFixedItems(){
+ const box=$('fixedItems');if(!box)return;
+ $('fixedHours').value=fixedTotal().toFixed(1);
+ box.innerHTML=fixedItems.length?fixedItems.map(x=>`<div class="fixed-cost-row">
+   <div class="field"><label>固定費項目</label><input id="fx_name_${x.id}" value="${esc(x.name)}" placeholder="例：定例会議"></div>
+   <div class="field"><label>月間時間（h）</label><input id="fx_hours_${x.id}" type="number" min="0" step="0.5" value="${Number(x.hours)||0}"></div>
+   <button class="btn secondary fixed-remove" type="button" data-remove-fixed="${x.id}">削除</button>
+ </div>`).join(''):'<div class="muted" style="margin-top:10px">固定費項目はまだありません。</div>';
+ fixedItems.forEach(x=>{
+   $('fx_name_'+x.id)?.addEventListener('input',syncFixedItemsFromEditor);
+   $('fx_hours_'+x.id)?.addEventListener('input',updateFixedTotal);
+ });
+ box.querySelectorAll('[data-remove-fixed]').forEach(b=>b.addEventListener('click',()=>{
+   syncFixedItemsFromEditor();fixedItems=fixedItems.filter(x=>x.id!==b.dataset.removeFixed);renderFixedItems();renderDiagnosis();renderPlan();renderBottomFree();
+ }));
+}
+function addFixedItem(){
+ syncFixedItemsFromEditor();
+ const id='fx_'+Date.now();fixedItems.push({id,name:'',hours:0});renderFixedItems();setTimeout(()=>$('fx_name_'+id)?.focus(),0);
+}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function syncDefsFromEditor(){
+ defs=defs.map((d,i)=>{
+   const o=$('obj_'+d.id),v=$('verb_'+d.id),u=$('unit_'+d.id);
+   if(!o||!v)return d;
+   const object=o.value.trim()||('機能'+(i+1)),verb=v.value.trim()||'実行する',unit=(u?.value.trim()||'件');
+   return {...d,object,verb,unit,name:object+'を'+verb};
+ });
+}
+function renderFunctionEditor(){
+ $('functionEditor').innerHTML=defs.map((d,i)=>`<div class="function-row">
+   <div class="field"><label>名詞（何を）</label><input id="obj_${d.id}" value="${esc(d.object||'')}" placeholder="例：ニーズ"></div>
+   <div class="field"><label>他動詞（どうする）</label><input id="verb_${d.id}" value="${esc(d.verb||'')}" placeholder="例：収集する"></div>
+   <div class="field unit-field"><label>単位</label><input id="unit_${d.id}" value="${esc(d.unit||'件')}" placeholder="件"></div>
+   <button class="btn secondary remove-fn" type="button" data-remove="${d.id}" ${defs.length<=2?'disabled title="DARE比較のため2機能以上必要"':''}>削除</button>
+   <div class="function-preview">機能定義：<b id="preview_${d.id}">${esc(d.name)}</b></div>
+ </div>`).join('');
+ defs.forEach(d=>{
+   ['obj_','verb_'].forEach(prefix=>$(prefix+d.id).addEventListener('input',()=>{
+     const object=$('obj_'+d.id).value.trim(),verb=$('verb_'+d.id).value.trim();
+     $('preview_'+d.id).textContent=(object||'（名詞）')+'を'+(verb||'（他動詞）');
+   }));
+ });
+ document.querySelectorAll('[data-remove]').forEach(b=>b.addEventListener('click',()=>{
+   syncDefsFromEditor(); defs=defs.filter(d=>d.id!==b.dataset.remove); rebuildFunctionViews();
+ }));
+}
+function rebuildFunctionViews(savedComparisons){
+ renderFunctionEditor();renderProcess();renderCompare(savedComparisons);renderActualSelect();renderReceiptSelects();renderWeightsAndBudget();
+}
+function addFunction(){
+ syncDefsFromEditor();
+ const id='fn_'+Date.now();
+ defs.push({id,object:'',verb:'',name:'（名詞）を（他動詞）',unit:'件',target:0,mins:30});
+ rebuildFunctionViews();
+ setTimeout(()=>$('obj_'+id)?.focus(),0);
+}
+function resetFunctions(){
+ defs=defaultDefs.map(d=>({...d,name:d.object+'を'+d.verb}));
+ rebuildFunctionViews();
+}
+function renderProcess(){
+ $('processBody').innerHTML=defs.map(d=>`<tr><td><b>${d.name}</b><div class="muted">${d.unit}で管理</div></td><td><input id="t_${d.id}" type="number" value="${d.target}" min="0" step="1" style="width:90px"> ${d.unit}</td><td><input id="m_${d.id}" type="number" value="${d.mins}" min="0" step="5" style="width:90px"> 分</td><td id="need_${d.id}">${(d.target*d.mins/60).toFixed(1)}h</td></tr>`).join('');
+ defs.forEach(d=>['t_','m_'].forEach(p=>$(p+d.id).addEventListener('input',()=>{$('need_'+d.id).textContent=((Number($('t_'+d.id).value)||0)*(Number($('m_'+d.id).value)||0)/60).toFixed(1)+'h';})));
+}
+function getCurrentDefs(){return defs.map(d=>({...d,target:Number($('t_'+d.id)?.value ?? d.target)||0,mins:Number($('m_'+d.id)?.value ?? d.mins)||0}))}
+function renderCompare(saved){
+ $('compareBox').innerHTML=defs.slice(0,-1).map((d,i)=>`<div class="card" style="margin-top:10px;background:#fafaf8"><div><b>${d.name}</b> は <b>${defs[i+1].name}</b> の</div><div class="row" style="margin-top:8px"><input id="cmp_${i}" type="number" min="0.1" step="0.1" value="${saved?.[i]||1}" style="width:100px;padding:9px;border:1px solid var(--line);border-radius:8px"><span>倍重要</span></div></div>`).join('');
+}
+function getComparisons(){return defs.slice(0,-1).map((_,i)=>Number($('cmp_'+i)?.value)||1)}
+function calcWeights(){
+ const c=getComparisons();const raw=[1];for(let i=0;i<c.length;i++)raw.push(raw[i]/c[i]);
+ const sum=raw.reduce((a,b)=>a+b,0);return raw.map(x=>x/sum);
+}
+function reserved(){return num('fixedHours')+num('hypHours')+num('reflectHours')+num('bufferHours')}
+function free(){return Math.max(0,num('totalHours')-reserved())}
+function renderPlan(){
+ $('kTotal').textContent=num('totalHours').toFixed(1)+'h';$('kReserved').textContent=reserved().toFixed(1)+'h';$('kFree').textContent=free().toFixed(1)+'h';
+ const ds=getCurrentDefs();const need=ds.reduce((s,d)=>s+d.target*d.mins/60,0);
+ $('planBody').innerHTML=ds.map(d=>{const h=d.target*d.mins/60;return `<tr><td><b>${d.name}</b></td><td>${d.target}${d.unit}</td><td>${d.mins}分</td><td>${h.toFixed(1)}h</td><td>${need?((h/need)*100).toFixed(1):'0.0'}%</td></tr>`}).join('')+`<tr><td colspan="3"><b>合計</b></td><td><b>${need.toFixed(1)}h</b></td><td>100%</td></tr>`;
+ renderWeightsAndBudget();
+}
+function renderWeightsAndBudget(){
+ const w=calcWeights();
+ const topIndex=w.indexOf(Math.max(...w));
+ const bars=defs.map((d,i)=>`<div class="weight-row"><div class="weight-name">${d.name}</div><div class="weight-track" aria-label="${d.name} ${(w[i]*100).toFixed(1)}%"><div class="weight-fill" style="width:${Math.max(2,w[i]*100).toFixed(1)}%"></div></div><div class="weight-pct">${(w[i]*100).toFixed(1)}%</div></div>`).join('');
+ $('weightResult').innerHTML=`<div class="weight-layout"><div><h3>あなたの今月の営業機能ウエイト</h3><div class="weight-bars">${bars}</div></div><div class="dare-note"><h3>読み方</h3><p><b>最上位：</b>${defs[topIndex].name} ${(w[topIndex]*100).toFixed(1)}%</p><p>ウエイトは「一般的な正解」ではなく、今月のあなたの営業戦略を数値化したものです。</p><p>この比率を、必要活動を確保した後の<b>裁量時間</b>へ掛けて月次時間予算をつくります。</p></div></div><div class="section-gap"><table><thead><tr><th>役割定義</th><th>ウエイト</th><th>位置づけ</th></tr></thead><tbody>${defs.map((d,i)=>`<tr><td>${d.name}</td><td><b>${(w[i]*100).toFixed(1)}%</b></td><td>${i===topIndex?'<span class="good">今月の最重点</span>':'個別ウエイト'}</td></tr>`).join('')}</tbody></table></div>`;
+ const ds=getCurrentDefs();const execution=ds.reduce((s,d)=>s+d.target*d.mins/60,0);const discretion=Math.max(0,free()-execution);
+ $('budgetResult').innerHTML=`<div class="grid g3"><div><div class="muted">自由時間</div><div class="kpi">${free().toFixed(1)}h</div></div><div><div class="muted">必要活動時間</div><div class="kpi">${execution.toFixed(1)}h</div></div><div><div class="muted">裁量時間</div><div class="kpi">${discretion.toFixed(1)}h</div></div></div><div class="section-gap"><table><thead><tr><th>役割定義</th><th>DAREウエイト</th><th>必要活動</th><th>裁量配分</th><th>月次時間予算</th></tr></thead><tbody>${defs.map((d,i)=>{const need=d.target*d.mins/60;const extra=discretion*w[i];return `<tr><td>${d.name}</td><td>${(w[i]*100).toFixed(1)}%</td><td>${need.toFixed(1)}h</td><td>${extra.toFixed(1)}h</td><td><b>${(need+extra).toFixed(1)}h</b></td></tr>`}).join('')}</tbody></table></div>`;
+}
+function receipts(){return JSON.parse(localStorage.getItem('stm_receipts')||'[]')}
+function setReceipts(a){localStorage.setItem('stm_receipts',JSON.stringify(a));renderReceipts();renderActuals();renderBufferAnalysis();renderDiagnosis();renderReview()}
+let weekOffset=0;
+function parseDateOnly(v){if(!v)return null;const [y,m,d]=v.split('-').map(Number);return new Date(y,m-1,d)}
+function isoDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`}
+function weekStart(offset=0){const d=new Date();d.setHours(0,0,0,0);const dow=(d.getDay()+6)%7;d.setDate(d.getDate()-dow+offset*7);return d}
+function receiptDuration(start,end){if(!start||!end)return 0;const [sh,sm]=start.split(':').map(Number),[eh,em]=end.split(':').map(Number);let mins=(eh*60+em)-(sh*60+sm);return mins>0?mins/60:0}
+function updateDuration(){const h=receiptDuration($('rcStart').value,$('rcEnd').value);$('rcDuration').textContent=h>0?h.toFixed(2)+'h':'終了は開始より後にしてください'}
+
+function receiptHours(x){return Number(x.hours)||receiptDuration(x.start,x.end)||0}
+function roundUpHalf(v){return Math.ceil(Math.max(0,v)*2)/2}
+
+const thiefReasonLabels={
+ interrupt:'急な依頼・差し込み',
+ trouble:'突発トラブル',
+ waiting:'待ち・相手都合',
+ delay:'移動・交通遅延',
+ rework:'手戻り',
+ search:'探し物・情報探索',
+ poorplan:'段取り不足',
+ other:'その他',
+ '':'未分類'
+};
+function receiptHours(x){return Number(x.hours)||receiptDuration(x.start,x.end)||0}
+function roundUpHalf(v){return Math.ceil(Math.max(0,v)*2)/2}
+function rankThieves(rows,type){
+ const filtered=rows.filter(x=>x.thief===type);
+ const map={};
+ filtered.forEach(x=>{
+   const key=x.thiefReason||'';
+   if(!map[key])map[key]={key,label:thiefReasonLabels[key]||key||'未分類',hours:0,count:0};
+   map[key].hours+=receiptHours(x);
+   map[key].count+=1;
+ });
+ return Object.values(map).sort((a,b)=>b.hours-a.hours);
+}
+function bufferStats(){
+ const now=new Date();now.setHours(23,59,59,999);
+ const from=new Date(now);from.setDate(from.getDate()-27);from.setHours(0,0,0,0);
+ const rows=receipts().filter(x=>{
+   const d=parseDateOnly(x.date); return d && d>=from && d<=now;
+ });
+ const recorded=rows.reduce((a,x)=>a+receiptHours(x),0);
+ const external=rows.filter(x=>x.thief==='external').reduce((a,x)=>a+receiptHours(x),0);
+ const internal=rows.filter(x=>x.thief==='internal').reduce((a,x)=>a+receiptHours(x),0);
+ const ratio=recorded>0?external/recorded:0;
+ const projected=ratio*num('totalHours');
+ const recommended=roundUpHalf(projected);
+ return {
+   rows,recorded,external,internal,ratio,projected,recommended,
+   externalRank:rankThieves(rows,'external'),
+   internalRank:rankThieves(rows,'internal')
+ };
+}
+function renderRanking(targetId,items,total){
+ const el=$(targetId); if(!el)return;
+ if(!items.length){
+   el.innerHTML='<div class="muted" style="padding:14px 0">まだ該当データがありません。</div>';
+   return;
+ }
+ const max=Math.max(...items.map(x=>x.hours),0.01);
+ el.innerHTML=items.map((x,i)=>{
+   const pct=total>0?x.hours/total*100:0;
+   const width=x.hours/max*100;
+   return `<div class="rank-row">
+     <div class="rank-no">${i+1}</div>
+     <div>
+       <div class="rank-name">${x.label}</div>
+       <div class="rank-bar"><span style="width:${width.toFixed(1)}%"></span></div>
+     </div>
+     <div class="rank-value">${x.hours.toFixed(1)}h</div>
+     <div class="rank-meta">${pct.toFixed(0)}%<br>${x.count}件</div>
+   </div>`;
+ }).join('');
+}
+function renderBufferAnalysis(){
+ if(!$('bufRecorded'))return;
+ const b=bufferStats();
+ $('bufRecorded').textContent=b.recorded.toFixed(1)+'h';
+ $('bufExternal').textContent=b.external.toFixed(1)+'h';
+ $('bufExternalPct').textContent=(b.ratio*100).toFixed(1)+'%';
+ $('bufInternal').textContent=b.internal.toFixed(1)+'h';
+ $('bufRecommended').textContent=b.recommended.toFixed(1)+'h';
+ $('bufFormula').innerHTML=b.recorded>0
+  ? `計算：外的時間泥棒 ${b.external.toFixed(1)}h ÷ 記録時間 ${b.recorded.toFixed(1)}h ＝ <b>${(b.ratio*100).toFixed(1)}%</b> → 定時 ${num('totalHours').toFixed(1)}h × ${(b.ratio*100).toFixed(1)}% ＝ ${b.projected.toFixed(1)}h → <b>推奨 ${b.recommended.toFixed(1)}h</b>`
+  : '直近28日間の時間レシートが蓄積されると自動計算します。';
+ const coverage=num('totalHours')>0?b.recorded/num('totalHours'):0;
+ $('bufDataNote').textContent=b.recorded===0?'まだ分析データがありません。':coverage<0.25?'記録量が少ないため暫定値です。':coverage<0.6?'データ蓄積中です。':'実績に基づく目安として利用できます。';
+ renderRanking('externalRanking',b.externalRank,b.external);
+ renderRanking('internalRanking',b.internalRank,b.internal);
+}
+
+function currentMonthReceipts(){
+ const mk=currentMonthKey();
+ return receipts().filter(x=>monthKey(x.date)===mk);
+}
+function plannedRequiredHours(){
+ return getCurrentDefs().reduce((sum,d)=>sum+(Number(d.target)||0)*(Number(d.mins)||0)/60,0);
+}
+function diagnosisStats(){
+ const total=num('totalHours');
+ const fixed=num('fixedHours');
+ const strategic=num('hypHours')+num('reflectHours');
+ const recommendedBuffer=bufferStats().recommended;
+ const chosenBuffer=num('bufferHours');
+ // 診断は実績由来の推奨バッファを優先。データがない場合は設定値を使う。
+ const effectiveBuffer=bufferStats().recorded>0?recommendedBuffer:chosenBuffer;
+ const available=Math.max(0,total-fixed-strategic-effectiveBuffer);
+ const required=plannedRequiredHours();
+
+ const monthRows=currentMonthReceipts();
+ const internal=monthRows.filter(x=>x.thief==='internal').reduce((sum,x)=>sum+receiptHours(x),0);
+ const waste=monthRows.filter(x=>x.prod==='waste').reduce((sum,x)=>sum+receiptHours(x),0);
+ const roleOut=monthRows.filter(x=>x.role==='out').reduce((sum,x)=>sum+receiptHours(x),0);
+
+ // 二重計上を避けるため「改善可能時間」は同じレシートの重複条件を1回だけカウント。
+ const improvableRows=monthRows.filter(x=>x.thief==='internal'||x.prod==='waste'||x.role==='out');
+ const improve=improvableRows.reduce((sum,x)=>sum+receiptHours(x),0);
+
+ const rawGap=Math.max(0,required-available);
+ const shortage=Math.max(0,rawGap-improve);
+
+ let type='余力あり';
+ let message='';
+ if(rawGap<=0){
+   type='余力あり';
+   message=`必要時間は実質使用可能時間の範囲内です。現時点では、構造的な時間不足は見えていません。`;
+ }else if(shortage<=0){
+   type='改善型';
+   message=`必要時間に対して ${rawGap.toFixed(1)}h の不足がありますが、改善可能時間 ${improve.toFixed(1)}h の範囲内です。まずは時間泥棒・不要非生産・役割外時間の改善余地があります。`;
+ }else if(bufferStats().ratio>0 && chosenBuffer+0.01<recommendedBuffer){
+   type='バッファ調整型';
+   message=`外的時間泥棒の実績からみて、現在のバッファ設定 ${chosenBuffer.toFixed(1)}h より推奨 ${recommendedBuffer.toFixed(1)}h が大きくなっています。バッファ設計の見直しとあわせて、改善後も ${shortage.toFixed(1)}h の不足が残ります。`;
+ }else{
+   type='構造不足型';
+   message=`改善可能時間 ${improve.toFixed(1)}h をすべて減らしても、なお ${shortage.toFixed(1)}h の不足が残ります。役割・活動量・固定費・人員・期限・残業など、構造側の判断が必要な状態です。`;
+ }
+
+ return {
+   total,fixed,strategic,effectiveBuffer,available,required,
+   internal,waste,roleOut,improve,rawGap,shortage,type,message
+ };
+}
+function renderDiagnosis(){
+ if(!$('diagAvailable'))return;
+ const d=diagnosisStats();
+ $('diagAvailable').textContent=d.available.toFixed(1)+'h';
+ $('diagRequired').textContent=d.required.toFixed(1)+'h';
+ $('diagImprove').textContent=d.improve.toFixed(1)+'h';
+ $('diagShortage').textContent=d.shortage.toFixed(1)+'h';
+ $('diagType').textContent=d.type;
+ $('diagMessage').innerHTML=`
+   <div>${d.message}</div>
+   <div><b>判定式：</b> 定時 ${d.total.toFixed(1)}h − 拘束固定 ${d.fixed.toFixed(1)}h − 戦略固定 ${d.strategic.toFixed(1)}h − バッファ ${d.effectiveBuffer.toFixed(1)}h ＝ 実質使用可能 ${d.available.toFixed(1)}h</div>
+   <div><b>改善可能時間：</b> 内的時間泥棒・不要非生産・役割外の重複を除いて ${d.improve.toFixed(1)}h</div>
+   <div><b>構造的不足：</b> max(0, 必要時間 ${d.required.toFixed(1)}h − 使用可能 ${d.available.toFixed(1)}h − 改善余地 ${d.improve.toFixed(1)}h) ＝ ${d.shortage.toFixed(1)}h</div>`;
+}
+function renderReceipts(){
+ const costLabels={free:'自由時間',fixed:'拘束固定費',strategy:'戦略固定費',buffer:'バッファ使用'};
+ const prodLabels={direct:'直接生産',indirect:'間接生産',necessary:'必要非生産',waste:'不要非生産'};
+ const thiefLabels={planned:'予定内',external:'外的時間泥棒',internal:'内的時間泥棒'};
+ const a=receipts();
+ const total=a.reduce((s,x)=>s+(Number(x.hours)||receiptDuration(x.start,x.end)||0),0);
+ const out=a.filter(x=>x.role==='out').reduce((s,x)=>s+(Number(x.hours)||receiptDuration(x.start,x.end)||0),0);
+ const waste=a.filter(x=>x.prod==='waste').reduce((s,x)=>s+(Number(x.hours)||receiptDuration(x.start,x.end)||0),0);
+ $('rcTotal').textContent=total.toFixed(1)+'h';$('rcOut').textContent=out.toFixed(1)+'h';$('rcWaste').textContent=waste.toFixed(1)+'h';
+ const external=a.filter(x=>x.thief==='external').reduce((s,x)=>s+(Number(x.hours)||receiptDuration(x.start,x.end)||0),0);
+ if($('rcExternal'))$('rcExternal').textContent=external.toFixed(1)+'h';
+ const ws=weekStart(weekOffset), we=new Date(ws);we.setDate(ws.getDate()+6);
+ $('weekTitle').textContent=`${ws.getMonth()+1}/${ws.getDate()} 〜 ${we.getMonth()+1}/${we.getDate()}`;
+ const days=['月','火','水','木','金','土','日'];
+ let html='<div class="cal-head"></div>'+days.map((n,i)=>{const d=new Date(ws);d.setDate(ws.getDate()+i);return `<div class="cal-head">${n}<br>${d.getMonth()+1}/${d.getDate()}</div>`}).join('');
+ html+='<div class="time-col">'+Array.from({length:15},(_,i)=>`<div class="time-label">${7+i}:00</div>`).join('')+'</div>';
+ for(let i=0;i<7;i++){const d=new Date(ws);d.setDate(ws.getDate()+i);const key=isoDate(d);const ev=a.filter(x=>x.date===key&&x.start&&x.end);html+=`<div class="day-col"><div class="day-canvas">${ev.map((x,idx)=>{const [sh,sm]=x.start.split(':').map(Number),[eh,em]=x.end.split(':').map(Number);const startM=sh*60+sm,endM=eh*60+em;const top=Math.max(0,(startM-420)/60*48);const height=Math.max(20,(endM-startM)/60*48);const globalIndex=a.indexOf(x);return `<button type="button" class="event ${x.prod||'indirect'} ${x.overtime==='yes'?'overtime':''}" data-idx="${globalIndex}" style="top:${top}px;height:${height}px"><strong>${x.start}–${x.end}</strong>${x.activity||'-'}</button>`}).join('')}</div></div>`}
+ $('weekCalendar').innerHTML=html;
+ $('weekCalendar').querySelectorAll('.event').forEach(el=>el.addEventListener('click',()=>{const x=a[Number(el.dataset.idx)];$('eventDetail').hidden=false;$('eventDetail').innerHTML=`<div class="row" style="justify-content:space-between"><b>${x.date} ${x.start}–${x.end}｜${x.activity}</b><button type="button" class="btn secondary" id="detailDelete">削除</button></div><div class="muted" style="margin-top:6px">${costLabels[x.cost]||x.cost}／${x.role==='out'?'役割外':'役割内'}／${prodLabels[x.prod]||x.prod}／${thiefLabels[x.thief]||'予定内'}${x.overtime==='yes'?'／残業':''}</div>${x.memo?`<div style="margin-top:6px">${x.memo}</div>`:''}`;$('detailDelete').onclick=()=>delReceipt(Number(el.dataset.idx));}));
+ const legacy=a.filter(x=>!x.start||!x.end);$('legacyReceipts').innerHTML=legacy.length?`<h3>時刻未設定の旧レシート</h3><table><thead><tr><th>日付</th><th>内容</th><th>時間</th></tr></thead><tbody>${legacy.map(x=>`<tr><td>${x.date||'-'}</td><td>${x.activity||'-'}</td><td>${Number(x.hours||0).toFixed(2)}h</td></tr>`).join('')}</tbody></table>`:'';
+}
+window.delReceipt=i=>{const a=receipts();a.splice(i,1);setReceipts(a)};
+function actuals(){return JSON.parse(localStorage.getItem('stm_actuals')||'[]')}
+function overtimes(){return JSON.parse(localStorage.getItem('stm_overtimes')||'[]')}
+function setOvertimes(a){localStorage.setItem('stm_overtimes',JSON.stringify(a));renderOvertimes();renderReview()}
+function setActuals(a){localStorage.setItem('stm_actuals',JSON.stringify(a));renderActuals();renderReview()}
+function renderActualSelect(){
+ if(!$('actType')||!$('otType'))return;
+ const av=$('actType').value,ov=$('otType').value;
+ $('actType').innerHTML=defs.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+ $('otType').innerHTML=defs.map(d=>`<option value="${d.id}">${d.name}</option>`).join('')+'<option value="other">その他</option>';
+ if([...$('actType').options].some(o=>o.value===av))$('actType').value=av;
+ if([...$('otType').options].some(o=>o.value===ov))$('otType').value=ov;
+}
+function renderReceiptSelects(){
+ if(!$('rcFunction'))return;
+ const v=$('rcFunction').value;
+ $('rcFunction').innerHTML='<option value="">実績に反映しない</option>'+defs.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+ if([...$('rcFunction').options].some(o=>o.value===v))$('rcFunction').value=v;
+}
+function monthKey(d){return String(d||'').slice(0,7)}
+function currentMonthKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function receiptActuals(mk=currentMonthKey(),defList=defs){
+ const a=receipts().filter(x=>monthKey(x.date)===mk && x.functionId);
+ return defList.map(d=>{
+   const rows=a.filter(x=>x.functionId===d.id);
+   return {id:d.id,name:d.name,hours:rows.reduce((s,x)=>s+(Number(x.hours)||receiptDuration(x.start,x.end)||0),0),count:rows.reduce((s,x)=>s+(Number(x.count)||0),0)};
+ });
+}
+function combinedActualsForMonth(mk,defList=defs){
+ const auto=receiptActuals(mk,defList), manual=actuals().filter(x=>monthKey(x.date)===mk);
+ return defList.map(d=>{
+   const r=auto.find(x=>x.id===d.id)||{hours:0,count:0};
+   const m=manual.filter(x=>x.type===d.id);
+   return {id:d.id,name:d.name,hours:r.hours+m.reduce((s,x)=>s+(Number(x.hours)||0),0),count:r.count+m.reduce((s,x)=>s+(Number(x.count)||0),0),autoHours:r.hours,autoCount:r.count};
+ });
+}
+function renderActuals(){
+ renderActualSelect();renderReceiptSelects();
+ const combined=combinedActualsForMonth(currentMonthKey(),defs);
+ $('receiptActualSummary').innerHTML=`<table><thead><tr><th>機能</th><th>目標件数</th><th>実績件数</th><th>レシート時間</th><th>総実績時間</th><th>件数達成率</th></tr></thead><tbody>${combined.map(x=>{const d=defs.find(z=>z.id===x.id),rate=d&&d.target>0?x.count/d.target*100:0;return `<tr><td><b>${x.name}</b></td><td>${d?.target||0} ${d?.unit||''}</td><td><b>${x.count.toFixed(0)}</b> ${d?.unit||''}</td><td>${x.autoHours.toFixed(2)}h</td><td><b>${x.hours.toFixed(2)}h</b></td><td class="${rate>=100?'good':rate<70?'bad':''}">${rate.toFixed(0)}%</td></tr>`}).join('')}</tbody></table><p class="muted" style="margin-top:8px">※「総実績時間」は時間レシート＋例外の手動補正です。</p>`;
+ const a=actuals();$('actualBody').innerHTML=a.length?a.map((x,i)=>`<tr><td>${x.date||'-'}</td><td>${defs.find(d=>d.id===x.type)?.name||x.type}</td><td>${x.count}</td><td>${Number(x.hours).toFixed(2)}h</td><td>${x.memo||''}</td><td><button class="btn secondary" onclick="delActual(${i})">削除</button></td></tr>`).join(''):'<tr><td colspan="6" class="muted">手動補正はありません。</td></tr>';
+ renderOvertimes();
+}
+function renderOvertimes(){
+ const labels={direct:'直接生産',indirect:'間接生産',necessary:'必要非生産',waste:'不要非生産'};
+ const a=overtimes();
+ $('overtimeBody').innerHTML=a.length?a.map((x,i)=>`<tr><td>${defs.find(d=>d.id===x.type)?.name||(x.type==='other'?'その他':x.type)}</td><td>${labels[x.prod]||x.prod}</td><td>${Number(x.hours).toFixed(2)}h</td><td>${x.memo||''}</td><td><button class="btn secondary" onclick="delOvertime(${i})">削除</button></td></tr>`).join(''):'<tr><td colspan="5" class="muted">まだ残業実績がありません。</td></tr>';
+}
+window.delActual=i=>{const a=actuals();a.splice(i,1);setActuals(a)};
+window.delOvertime=i=>{const a=overtimes();a.splice(i,1);setOvertimes(a)};
+function monthlyReviews(){
+ try{return JSON.parse(localStorage.getItem('stm_monthly_reviews')||'{}')||{}}catch(e){return {}}
+}
+function setMonthlyReviews(v){localStorage.setItem('stm_monthly_reviews',JSON.stringify(v))}
+function selectedReviewMonth(){return $('reviewMonth')?.value||currentMonthKey()}
+function reviewPlanDefs(mk){
+ const history=monthlyReviews(),saved=history[mk];
+ if(mk!==currentMonthKey() && saved?.plan?.defs?.length)return saved.plan.defs;
+ return getCurrentDefs();
+}
+function migrateLegacyReview(){
+ const legacy=JSON.parse(localStorage.getItem('stm_review')||'null');
+ if(!legacy)return;
+ const all=monthlyReviews(),mk=currentMonthKey();
+ if(!all[mk]){
+   all[mk]={month:mk,...legacy,savedAt:new Date().toISOString(),plan:{defs:getCurrentDefs()}};
+   setMonthlyReviews(all);
+ }
+}
+function loadReviewIntoForm(mk){
+ const r=monthlyReviews()[mk]||null;
+ $('revEvent').value=r?.event||'';
+ $('revWhy').value=r?.why||'';
+ $('revLesson').value=r?.lesson||'';
+ $('revHyp').value=r?.hyp||'';
+}
+function renderReviewHistory(){
+ const el=$('reviewHistory');if(!el)return;
+ const all=monthlyReviews();const months=Object.keys(all).sort().reverse();
+ if(!months.length){el.innerHTML='<div class="muted">まだ月別履歴はありません。</div>';return}
+ el.innerHTML=`<table><thead><tr><th>月</th><th>教訓</th><th>次の仮説</th><th>保存</th><th></th></tr></thead><tbody>${months.map(m=>{const r=all[m]||{};return `<tr><td><b>${esc(m)}</b></td><td>${esc((r.lesson||'').slice(0,50))||'-'}</td><td>${esc((r.hyp||'').slice(0,50))||'-'}</td><td>${r.savedAt?new Date(r.savedAt).toLocaleDateString('ja-JP'):'-'}</td><td><button type="button" class="btn secondary review-open" data-month="${esc(m)}">表示</button></td></tr>`}).join('')}</tbody></table>`;
+ el.querySelectorAll('.review-open').forEach(b=>b.addEventListener('click',()=>{$('reviewMonth').value=b.dataset.month;loadReviewIntoForm(b.dataset.month);renderReview()}));
+}
+function renderReview(){
+ const mk=selectedReviewMonth();
+ const ds=reviewPlanDefs(mk);
+ const combined=combinedActualsForMonth(mk,ds);
+ const sums={};combined.forEach(x=>{sums[x.id]={count:Number(x.count)||0,hours:Number(x.hours)||0}});
+ $('gapResult').innerHTML='<div class="muted" style="margin-bottom:8px">'+esc(mk)+'｜時間レシート＋例外の手動補正を自動集計</div><table><thead><tr><th>役割定義</th><th>目標件数</th><th>実績件数</th><th>差</th><th>計画時間</th><th>実績時間</th><th>判定</th></tr></thead><tbody>'+ds.map(d=>{const s=sums[d.id]||{count:0,hours:0};const target=Number(d.target)||0,mins=Number(d.mins)||0;const gap=s.count-target;const status=gap>=0?'<span class="good">達成</span>':'<span class="bad">未達 → 内省</span>';return `<tr><td>${esc(d.name)}</td><td>${target}</td><td>${s.count.toFixed(0)}</td><td>${gap>=0?'+':''}${gap.toFixed(0)}</td><td>${(target*mins/60).toFixed(1)}h</td><td>${s.hours.toFixed(1)}h</td><td>${status}</td></tr>`}).join('')+'</tbody></table>';
+ const labels={direct:'直接生産',indirect:'間接生産',necessary:'必要非生産',waste:'不要非生産'};
+ const ots=overtimes(); const os={direct:0,indirect:0,necessary:0,waste:0}; ots.forEach(x=>{if(os[x.prod]!==undefined)os[x.prod]+=Number(x.hours)||0});
+ const otTotal=Object.values(os).reduce((a,b)=>a+b,0);
+ $('overtimeSummary').innerHTML=`<div class="grid g3"><div><div class="muted">登録残業時間</div><div class="kpi">${otTotal.toFixed(1)}h</div></div><div><div class="muted">残業率</div><div class="kpi">${num('totalHours')>0?(otTotal/num('totalHours')*100).toFixed(1):'0.0'}%</div></div><div><div class="muted">不要非生産</div><div class="kpi ${os.waste>0?'bad':''}">${os.waste.toFixed(1)}h</div></div></div><div class="section-gap"><table><thead><tr><th>区分</th><th>時間</th><th>構成比</th></tr></thead><tbody>${Object.entries(os).map(([k,v])=>`<tr><td>${labels[k]}</td><td>${v.toFixed(1)}h</td><td>${otTotal?((v/otTotal)*100).toFixed(1):'0.0'}%</td></tr>`).join('')}</tbody></table></div>`;
+ const r=monthlyReviews()[mk];
+ $('carryHyp').innerHTML=r?.hyp?`<b>${esc(mk)}から翌月へ：</b><br>${esc(r.hyp).replace(/\n/g,'<br>')}`:'まだ保存されていません。';
+ renderReviewHistory();
+}
+function renderBottomFree(){
+ const t=num('totalHours'),r=reserved(),f=free(),pct=t>0?Math.max(0,Math.min(100,f/t*100)):0;
+ $('bottomTotal').textContent=t.toFixed(1)+'h';
+ $('bottomReserved').textContent=r.toFixed(1)+'h';
+ $('bottomFree').textContent=f.toFixed(1)+'h';
+ $('bottomFreeBar').style.width=pct.toFixed(1)+'%';
+ $('bottomFreePct').textContent=pct.toFixed(1)+'%';
+}
+function renderAll(){renderPlan();renderReceipts();renderActuals();renderBufferAnalysis();renderDiagnosis();renderReview();renderBottomFree()}
+
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.tab).classList.add('active');if(b.dataset.tab==='plan')renderPlan();if(b.dataset.tab==='review')renderReview();});
+$('saveSetup').onclick=save;
+$('applyBuffer').onclick=()=>{const b=bufferStats();$('bufferHours').value=b.recommended.toFixed(1);renderPlan();renderDiagnosis();renderBottomFree();save();};
+$('totalHours').addEventListener('input',()=>{renderBufferAnalysis();renderPlan();renderDiagnosis();renderBottomFree();});
+$('rcThief').addEventListener('change',()=>{
+ const thief=$('rcThief').value;
+ if(thief==='planned')$('rcThiefReason').value='';
+ $('rcThiefReason').disabled=thief==='planned';
+});
+$('rcThiefReason').disabled=$('rcThief').value==='planned';
+['hypHours','reflectHours','bufferHours'].forEach(id=>{
+ $(id).addEventListener('input',()=>{renderDiagnosis();renderPlan();renderBottomFree();});
+});
+$('addFixedItem').onclick=addFixedItem;
+$('calcWeights').onclick=()=>{syncDefsFromEditor();renderProcess();renderCompare(getComparisons());renderWeightsAndBudget();save()};
+$('addFunction').onclick=addFunction;$('resetFunctions').onclick=resetFunctions;
+$('addReceipt').onclick=()=>{const activity=$('rcActivity').value.trim(),start=$('rcStart').value,end=$('rcEnd').value,h=receiptDuration(start,end);if(!$('rcDate').value||!activity||h<=0)return;
+if($('rcThief').value!=='planned'&&!$('rcThiefReason').value){alert('時間泥棒の要因を選択してください。');return;}const a=receipts();a.push({date:$('rcDate').value,start,end,hours:h,cost:$('rcCost').value,activity,role:$('rcRole').value,prod:$('rcProd').value,overtime:$('rcOvertime').value,memo:$('rcMemo').value,functionId:$('rcFunction').value,count:Number($('rcCount').value)||0,thief:$('rcThief').value,thiefReason:$('rcThiefReason').value});setReceipts(a);$('rcActivity').value='';$('rcMemo').value='';$('rcCount').value=1;$('rcThief').value='planned';$('rcThiefReason').value='';$('rcThiefReason').disabled=true;renderActuals();};
+$('prevWeek').onclick=()=>{weekOffset--;renderReceipts()};$('nextWeek').onclick=()=>{weekOffset++;renderReceipts()};$('thisWeek').onclick=()=>{weekOffset=0;renderReceipts()};$('rcStart').addEventListener('input',updateDuration);$('rcEnd').addEventListener('input',updateDuration);
+$('addActual').onclick=()=>{const a=actuals();a.push({date:$('actDate').value,type:$('actType').value,hours:num('actHours'),count:num('actCount'),memo:$('actMemo').value});setActuals(a);$('actMemo').value='';};
+$('addOvertime').onclick=()=>{const a=overtimes();a.push({type:$('otType').value,prod:$('otProd').value,hours:num('otHours'),memo:$('otMemo').value});setOvertimes(a);$('otMemo').value='';};
+$('saveReview').onclick=()=>{
+ const mk=selectedReviewMonth();
+ const r={month:mk,event:$('revEvent').value,why:$('revWhy').value,lesson:$('revLesson').value,hyp:$('revHyp').value,savedAt:new Date().toISOString(),plan:{defs:getCurrentDefs().map(d=>({...d}))}};
+ const all=monthlyReviews();all[mk]=r;setMonthlyReviews(all);
+ if(mk===currentMonthKey())localStorage.setItem('stm_review',JSON.stringify(r));
+ renderReview();
+};
+
+// ===== Zero Lookとのデータ共有 =====
+function buildCoachShareData(){
+ const data={};
+ for(let i=0;i<localStorage.length;i++){
+   const k=localStorage.key(i);
+   if(k && k.startsWith('stm_')) data[k]=localStorage.getItem(k);
+ }
+ return {format:'Z-TIME-OS-COACH-SHARE',version:1,exportedAt:new Date().toISOString(),data};
+}
+function exportCoachShare(){
+ save();
+ const payload=buildCoachShareData();
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a'),d=new Date();
+ const ymd=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+ a.href=url;a.download=`Z-TIME_OS_共有_${ymd}.json`;document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+ $('shareStatus').textContent='共有ファイルを書き出しました。このファイルを Zero Lookへ送ってください。';
+}
+function importCoachShare(file){
+ const reader=new FileReader();
+ reader.onload=()=>{
+  try{
+   const p=JSON.parse(reader.result);
+   if(!p||p.format!=='Z-TIME-OS-COACH-SHARE'||!p.data)throw new Error('Z-TIME OSの共有ファイルではありません');
+   if(!confirm('現在保存されているZ-TIME OSデータを共有データで置き換えます。読み込みますか？'))return;
+   const remove=[];
+   for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('stm_'))remove.push(k)}
+   remove.forEach(k=>localStorage.removeItem(k));
+   Object.entries(p.data).forEach(([k,v])=>{if(k.startsWith('stm_')&&typeof v==='string')localStorage.setItem(k,v)});
+   $('shareStatus').textContent='共有データを読み込みました。画面を再読み込みします。';
+   setTimeout(()=>location.reload(),300);
+  }catch(e){alert('読み込みできませんでした：'+e.message)}
+ };
+ reader.readAsText(file);
+}
+$('exportCoachData').onclick=exportCoachShare;
+$('importCoachData').onclick=()=>$('importCoachFile').click();
+$('importCoachFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)importCoachShare(f);e.target.value='';};
+
+load();renderFixedItems();renderFunctionEditor();renderProcess();renderReceiptSelects();if(!$('rcDate').value)$('rcDate').value=isoDate(new Date());updateDuration();const saved=JSON.parse(localStorage.getItem('stm_state')||'null');renderCompare(saved?.comparisons);renderActualSelect();if($('reviewMonth'))$('reviewMonth').value=currentMonthKey();migrateLegacyReview();loadReviewIntoForm(currentMonthKey());if($('reviewMonth'))$('reviewMonth').addEventListener('change',()=>{loadReviewIntoForm(selectedReviewMonth());renderReview()});renderAll();
+</script>
+</body>
+</html>
